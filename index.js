@@ -6,7 +6,7 @@ require('dotenv').config()
 
 const walletAddresses = ['0xAC80f8FefE1F14F40fFf2Bf96210a5B46e0DfD26', '0xE77b8a5a3085AD31eF455F794e46FbBC3AF5cd36']
 const kinContractAddress = '0x818fc6c2ec5986bc6e2cbf00939d90556ab12ce5'
-const kinAmount = 1000000000 // gwei
+const kinAmount = 1000000000000000 // actually needs to be 1000000000000000000 wei TODO handle big num
 
 const web3 = new Web3(new HDWalletProvider(process.env.MNENOMIC, "https://mainnet.infura.io/v3/62df5323062344249adb11c3403dba29"))
 
@@ -26,9 +26,6 @@ void async function main() {
     console.log(`now transferring ${kinAmount} KIN to ${walletAddresses[i]}`);
     console.log(`from account: ${account}`);
 
-    // let approval = await kinContract.methods.approve(walletAddresses[i], kinAmount).send()
-
-
     let transferEncodedABI = await kinContract.methods.transfer(walletAddresses[i], kinAmount).encodeABI()
 
     console.log(`transferEncodedABI: ${transferEncodedABI}`);
@@ -44,9 +41,10 @@ void async function main() {
     console.log(`signedTxn: ${signedTxn}`);
     let signedRawTxn = signedTxn.rawTransaction
     console.log(`signedRawTxn: ${signedRawTxn}`);
-    let sendTxn = await web3.eth.sendSignedTransaction(signedRawTxn);
+    let sendTxn = web3.eth.sendSignedTransaction(signedRawTxn, (receipt) => {
+      console.log(`receipt: ${receipt}`);
+    });
     console.log(`sendTxn: ${sendTxn}`);
-    sendTxn.on('receipt', (receipt) => { console.log("Receipt: "+ receipt); });
 
     // let transfer = await kinContract.methods.transferFrom('0x8d3e809Fbd258083a5Ba004a527159Da535c8abA', walletAddresses[i], kinAmount).send()
   }
